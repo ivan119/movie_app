@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDebounce } from 'react-use';
 import Search from './components/Search.jsx';
 import MovieCard from './components/MovieCard.jsx';
+import Spinner from './components/Spinner.jsx';
 
 const { VITE_API_BASE_URL, VITE_TMDB_API_KEY } = import.meta.env;
 
@@ -39,7 +40,6 @@ const App = () => {
       }
       setMoviesList(data.results || []);
     } catch (e) {
-      console.log(e);
       setErrorMessage('Error fetching movies. Please try again later.');
     } finally {
       setIsLoadingState(false);
@@ -64,7 +64,7 @@ const App = () => {
         <section className="all-movies">
           <h2 className="mt-6">All Movies</h2>
           {isLoadingState ? (
-            <p className="text-white">Loading...</p>
+            <Spinner />
           ) : errorMessage ? (
             <p className="text-red-700">{errorMessage}</p>
           ) : (
