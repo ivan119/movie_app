@@ -5,6 +5,9 @@ import MovieCard from '/src/components/MovieCard.jsx';
 import Spinner from '/src/components/Spinner.jsx';
 import TrendingMoviesCard from '/src/components/TrendingMoviesCard.jsx';
 import { getTrendingMovies, updateSearchCount } from '/src/appwrite.js';
+import { motion, AnimatePresence } from 'framer-motion';
+import MovieCardSkeleton from '/src/components/MovieCardSkeleton.jsx';
+
 import { apiClient } from '/src/services/api';
 
 const App = () => {
@@ -73,19 +76,43 @@ const App = () => {
 
         {trendingMovies?.length > 0 && <TrendingMoviesCard trendingMovies={trendingMovies} />}
 
-        <section className="all-movies">
-          <h2 className="mt-6">All Movies</h2>
-          {isLoadingState ? (
-            <Spinner />
-          ) : errorMessage ? (
-            <p className="text-red-700">{errorMessage}</p>
-          ) : (
-            <ul>
-              {moviesList.map((movie) => (
-                <MovieCard key={movie.id} movie={movie} />
-              ))}
-            </ul>
-          )}
+        <section className="all-movies mt-10">
+          <h2 className="mb-4">All Movies</h2>
+
+          <div className="min-h-[600px]">
+            {' '}
+            {/* CLS FIX */}
+            <AnimatePresence mode="wait">
+              {isLoadingState ? (
+                <motion.ul
+                  key="skeleton"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+                >
+                  {Array.from({ length: 10 }).map((_, i) => (
+                    <MovieCardSkeleton key={i} />
+                  ))}
+                </motion.ul>
+              ) : errorMessage ? (
+                <p className="text-red-700">{errorMessage}</p>
+              ) : (
+                <motion.ul
+                  key="movies"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+                >
+                  {moviesList.map((movie) => (
+                    <MovieCard key={movie.id} movie={movie} />
+                  ))}
+                </motion.ul>
+              )}
+            </AnimatePresence>
+          </div>
         </section>
       </div>
     </main>
