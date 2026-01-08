@@ -3,6 +3,8 @@ import { useDebounce } from 'react-use';
 import Search from './components/Search.jsx';
 import MovieCard from './components/MovieCard.jsx';
 import Spinner from './components/Spinner.jsx';
+import { getTrendingMovies, updateSearchCount } from './appwrite.js';
+import TrendingMoviesCard from './components/TrendingMoviesCard.jsx';
 
 const { VITE_API_BASE_URL, VITE_TMDB_API_KEY } = import.meta.env;
 
@@ -19,10 +21,10 @@ const App = () => {
   const [moviesList, setMoviesList] = useState([]);
   const [isLoadingState, setIsLoadingState] = useState(false);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-
+  const [trendingMovies, setTrendingMovies] = useState([]);
   useDebounce(() => setDebouncedSearchTerm(searchTerm), 500, [searchTerm]);
 
-  const fetchMoves = async (query = '') => {
+  const fetchMovies = async (query = '') => {
     setIsLoadingState(true);
     setErrorMessage('');
     try {
@@ -39,15 +41,30 @@ const App = () => {
         setErrorMessage('No movies found. Please try again with a different search term.');
       }
       setMoviesList(data.results || []);
-    } catch (e) {
+      if (query && data.results.length > 0) {
+        await updateSearchCount(query, data.results[0]);
+      }
+    } catch {
       setErrorMessage('Error fetching movies. Please try again later.');
     } finally {
       setIsLoadingState(false);
     }
   };
+  const loadTrendingMovies = async () => {
+    try {
+      const movies = await getTrendingMovies();
+      setTrendingMovies(movies.documents || []);
+    } catch (e) {
+      console.log(e);
+    }
+  };
   useEffect(() => {
-    fetchMoves(debouncedSearchTerm);
+    fetchMovies(debouncedSearchTerm);
   }, [debouncedSearchTerm]);
+
+  useEffect(() => {
+    loadTrendingMovies();
+  }, []);
 
   return (
     <main>
@@ -61,6 +78,7 @@ const App = () => {
           </h1>
           <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
         </header>
+        {trendingMovies?.length > 0 && <TrendingMoviesCard trendingMovies={trendingMovies} />}
         <section className="all-movies">
           <h2 className="mt-6">All Movies</h2>
           {isLoadingState ? (
