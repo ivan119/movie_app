@@ -8,7 +8,10 @@ const TrendingMoviesCard = ({ trendingMovies }) => {
         {trendingMovies.map((movie, index) => (
           <li key={movie.$id}>
             <p>{index + 1}</p>
-            <img src={movie.poster_url || '/no-movie.png'} alt={movie.movie_id} />
+            <img
+              src={movie.poster_url.includes('null') ? '/no-movie.png' : movie.poster_url}
+              alt={movie.movie_id}
+            />
           </li>
         ))}
       </ul>
